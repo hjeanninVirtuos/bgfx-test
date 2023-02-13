@@ -10,6 +10,23 @@
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 #include <bx/math.h>
+#include <bgfx/embedded_shader.h>
+#include <dg_dmapack_vs.sc.glsl.bin.h>
+#include <dg_dmapack_vs.sc.essl.bin.h>
+#include <dg_dmapack_vs.sc.spv.bin.h>
+#include <dg_dmapack_fs.sc.glsl.bin.h>
+#include <dg_dmapack_fs.sc.essl.bin.h>
+#include <dg_dmapack_fs.sc.spv.bin.h>
+#ifdef _WIN32
+#include <dg_dmapack_vs.sc.dx9.bin.h>
+#include <dg_dmapack_vs.sc.dx11.bin.h>
+#include <dg_dmapack_fs.sc.dx9.bin.h>
+#include <dg_dmapack_fs.sc.dx11.bin.h>
+#endif // _WIN32
+
+
+const bgfx::EmbeddedShader dg_dmapack_vs_embed = BGFX_EMBEDDED_SHADER(dg_dmapack_vs);
+const bgfx::EmbeddedShader dg_dmapack_fs_embed = BGFX_EMBEDDED_SHADER(dg_dmapack_fs);
 
 struct PosColorVertex
 {
@@ -87,17 +104,12 @@ int main(int argc, char **argv)
 // Matrix
     const bx::Vec3 at = {0.0f, 0.0f, 0.0f};
     const bx::Vec3 eye = {0.0f, 0.0f, -35.0f};
-
-    // Set view and projection matrix for view 0.
     {
         float view[16];
         bx::mtxLookAt(view, eye, at);
-
         float proj[16];
         bx::mtxProj(proj, 60.0f, float(init.resolution.width) / float(init.resolution.height), 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
         bgfx::setViewTransform(0, view, proj);
-
-        // Set view 0 default viewport.
         bgfx::setViewRect(0, 0, 0, uint16_t(init.resolution.width), uint16_t(init.resolution.height));
     }
 
@@ -105,8 +117,13 @@ int main(int argc, char **argv)
     // Create vertex stream declaration.
     PosColorVertex::init();
     bgfx::VertexBufferHandle m_vbh;
-    // Create static vertex buffer.
     m_vbh = bgfx::createVertexBuffer(bgfx::makeRef(s_cubeVertices, sizeof(s_cubeVertices)), PosColorVertex::ms_layout);
+
+// Shader
+    bgfx::ProgramHandle m_program;
+	bgfx::ShaderHandle dmapack_vs = bgfx::createEmbeddedShader(&dg_dmapack_vs_embed, bgfx::RendererType::Direct3D11, "dg_dmapack_vs");
+	bgfx::ShaderHandle dmapack_fs = bgfx::createEmbeddedShader(&dg_dmapack_fs_embed, bgfx::RendererType::Direct3D11, "dg_dmapack_fs");
+    m_program = bgfx::createProgram(dmapack_vs, dmapack_fs, true);
 
     // Create program from shaders.
     //m_program = loadProgram("vs_cubes", "fs_cubes");  
@@ -141,13 +158,13 @@ int main(int argc, char **argv)
         bgfx::setTransform(mtx);
         bgfx::setVertexBuffer(0, m_vbh);
         bgfx::setState(state);
-        //bgfx::submit(0, m_program);
+        bgfx::submit(0, m_program);
 
         // Advance to next frame. Process submitted rendering primitives.
 		bgfx::frame();
 	}
     bgfx::destroy(m_vbh);
-    //bgfx::destroy(m_program);
+    bgfx::destroy(m_program);
     bgfx::shutdown();
     glfwTerminate();
     return 0;
