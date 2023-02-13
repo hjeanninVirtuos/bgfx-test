@@ -1,0 +1,6 @@
+[submodule "modules/bgfx"]
+	path = modules/bgfx
+	url = https://github.com/bkaradzic/bgfx.cmake
+[submodule "modules/glfw"]
+	path = modules/glfw
+	url = https://github.com/glfw/glfw
