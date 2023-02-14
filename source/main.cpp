@@ -24,11 +24,8 @@
 #include <dg_dmapack_fs.sc.dx11.bin.h>
 #endif // _WIN32
 
-
 const bgfx::EmbeddedShader dg_dmapack_vs_embed = BGFX_EMBEDDED_SHADER(dg_dmapack_vs);
 const bgfx::EmbeddedShader dg_dmapack_fs_embed = BGFX_EMBEDDED_SHADER(dg_dmapack_fs);
-
-//static bgfx::UniformHandle u_modelViewProj;
 
 struct PosColorVertex
 {
@@ -53,30 +50,14 @@ bgfx::VertexLayout PosColorVertex::ms_layout;
 
 static PosColorVertex s_cubeVertices[] =
 {
-	{-0.5f,  0.5f,  0.5f, 0xff000000 },
-	{ 0.5f,  0.5f,  0.5f, 0xff0000ff },
-	{-0.5f, -0.5f,  0.5f, 0xff00ff00 },
-	{ 0.5f, -0.5f,  0.5f, 0xff00ffff },
-	{-0.5f,  0.5f, -0.5f, 0xffff0000 },
-	{ 0.5f,  0.5f, -0.5f, 0xffff00ff },
-	{-0.5f, -0.5f, -0.5f, 0xffffff00 },
-	{ 0.5f, -0.5f, -0.5f, 0xffffffff },
+	{-0.5f, -0.5f,  0.5f, 0xff0000ff },
+	{ 0.5f,  0.5f,  0.5f, 0xff00ff00 },
+	{-0.5f,  0.5f,  0.5f, 0xffff0000 },
 };
 
 static const uint16_t s_cubeTriList[] =
 {
-	0, 1, 2, // 0
-	1, 3, 2,
-	4, 6, 5, // 2
-	5, 6, 7,
-	0, 2, 4, // 4
-	4, 2, 6,
-	1, 5, 3, // 6
-	5, 7, 3,
-	0, 4, 1, // 8
-	4, 5, 1,
-	2, 3, 6, // 10
-	6, 3, 7,
+	0, 1, 2 // 0
 };
 
 static bool s_showStats = false;
@@ -96,7 +77,7 @@ static void glfw_keyCallback(GLFWwindow *window, int key, int scancode, int acti
 
 int main(int argc, char **argv)
 {
-// GLFW
+	// Init
 	glfwSetErrorCallback(glfw_errorCallback);
 	if (!glfwInit())
 		return 1;
@@ -105,12 +86,9 @@ int main(int argc, char **argv)
 	if (!window)
 		return 1;
 	glfwSetKeyCallback(window, glfw_keyCallback);
-
-// Init
 	bgfx::renderFrame();
 	bgfx::Init init;
 	init.platformData.nwh = glfwGetWin32Window(window);
-
 	int width, height;
 	glfwGetWindowSize(window, &width, &height);
 	init.resolution.width = (uint32_t)width;
@@ -119,8 +97,7 @@ int main(int argc, char **argv)
 	if (!bgfx::init(init))
 		return 1;
 
-// Buffer
-    // Create vertex stream declaration.
+	// Buffer
     PosColorVertex::init();
     bgfx::VertexBufferHandle m_vbh;
     m_vbh = bgfx::createVertexBuffer(bgfx::makeRef(s_cubeVertices, sizeof(s_cubeVertices)), PosColorVertex::ms_layout);
@@ -137,29 +114,19 @@ int main(int argc, char **argv)
     	| BGFX_STATE_WRITE_R
     	| BGFX_STATE_WRITE_G
     	| BGFX_STATE_WRITE_B
-    	| BGFX_STATE_WRITE_A
-    	| BGFX_STATE_WRITE_Z
-		//| BGFX_STATE_DEPTH_TEST_LESS
-    	//| BGFX_STATE_CULL_CW
-    	//| BGFX_STATE_MSAA
     	| UINT64_C(0) // Triangle list is 0
     	;
 
+	// Clear
     const bgfx::ViewId kClearView = 0;
 	bgfx::setViewClear(kClearView, BGFX_CLEAR_COLOR);
 	bgfx::setViewRect(kClearView, 0, 0, bgfx::BackbufferRatio::Equal);
 
-// LOOP
+	// Loop
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
-        // Stats
 		bgfx::touch(kClearView);
-		bgfx::dbgTextClear();
-		bgfx::dbgTextPrintf(0, 0, 0x0f, "Press F1 to toggle stats.");
-		const bgfx::Stats* stats = bgfx::getStats();
-		bgfx::setDebug(s_showStats ? BGFX_DEBUG_STATS : BGFX_DEBUG_TEXT);
 
-// Render
         bgfx::setVertexBuffer(0, m_vbh);
         bgfx::setIndexBuffer(ibh);
         bgfx::setState(state);
@@ -168,6 +135,8 @@ int main(int argc, char **argv)
         // Advance to next frame. Process submitted rendering primitives.
 		bgfx::frame();
 	}
+
+	// Clean
     bgfx::destroy(m_vbh);
     bgfx::destroy(ibh);
     bgfx::destroy(m_program);
