@@ -28,6 +28,8 @@
 const bgfx::EmbeddedShader dg_dmapack_vs_embed = BGFX_EMBEDDED_SHADER(dg_dmapack_vs);
 const bgfx::EmbeddedShader dg_dmapack_fs_embed = BGFX_EMBEDDED_SHADER(dg_dmapack_fs);
 
+//static bgfx::UniformHandle u_modelViewProj;
+
 struct PosColorVertex
 {
 	float m_x;
@@ -59,6 +61,22 @@ static PosColorVertex s_cubeVertices[] =
 	{ 1.0f,  1.0f, -1.0f, 0xffff00ff },
 	{-1.0f, -1.0f, -1.0f, 0xffffff00 },
 	{ 1.0f, -1.0f, -1.0f, 0xffffffff },
+};
+
+static const uint16_t s_cubeTriList[] =
+{
+	0, 1, 2, // 0
+	1, 3, 2,
+	4, 6, 5, // 2
+	5, 6, 7,
+	0, 2, 4, // 4
+	4, 2, 6,
+	1, 5, 3, // 6
+	5, 7, 3,
+	0, 4, 1, // 8
+	4, 5, 1,
+	2, 3, 6, // 10
+	6, 3, 7,
 };
 
 static bool s_showStats = false;
@@ -108,7 +126,7 @@ int main(int argc, char **argv)
         float view[16];
         bx::mtxLookAt(view, eye, at);
         float proj[16];
-        bx::mtxProj(proj, 60.0f, float(init.resolution.width) / float(init.resolution.height), 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
+        bx::mtxProj(proj, 60.0f, float(init.resolution.width) / float(init.resolution.height), 0.1f, 100.0f, TRUE);
         bgfx::setViewTransform(0, view, proj);
         bgfx::setViewRect(0, 0, 0, uint16_t(init.resolution.width), uint16_t(init.resolution.height));
     }
@@ -118,15 +136,15 @@ int main(int argc, char **argv)
     PosColorVertex::init();
     bgfx::VertexBufferHandle m_vbh;
     m_vbh = bgfx::createVertexBuffer(bgfx::makeRef(s_cubeVertices, sizeof(s_cubeVertices)), PosColorVertex::ms_layout);
+    bgfx::IndexBufferHandle ibh;
+    ibh = bgfx::createIndexBuffer(bgfx::makeRef(s_cubeTriList, sizeof(s_cubeTriList)));
 
-// Shader
+    // Shader
     bgfx::ProgramHandle m_program;
 	bgfx::ShaderHandle dmapack_vs = bgfx::createEmbeddedShader(&dg_dmapack_vs_embed, bgfx::RendererType::Direct3D11, "dg_dmapack_vs");
 	bgfx::ShaderHandle dmapack_fs = bgfx::createEmbeddedShader(&dg_dmapack_fs_embed, bgfx::RendererType::Direct3D11, "dg_dmapack_fs");
     m_program = bgfx::createProgram(dmapack_vs, dmapack_fs, true);
 
-    // Create program from shaders.
-    //m_program = loadProgram("vs_cubes", "fs_cubes");  
     uint64_t state = 0
     	| BGFX_STATE_WRITE_R
     	| BGFX_STATE_WRITE_G
@@ -154,9 +172,8 @@ int main(int argc, char **argv)
 		bgfx::setDebug(s_showStats ? BGFX_DEBUG_STATS : BGFX_DEBUG_TEXT);
 
 // Render
-        float mtx[16];
-        bgfx::setTransform(mtx);
         bgfx::setVertexBuffer(0, m_vbh);
+        bgfx::setIndexBuffer(ibh);
         bgfx::setState(state);
         bgfx::submit(0, m_program);
 
@@ -164,6 +181,7 @@ int main(int argc, char **argv)
 		bgfx::frame();
 	}
     bgfx::destroy(m_vbh);
+    bgfx::destroy(ibh);
     bgfx::destroy(m_program);
     bgfx::shutdown();
     glfwTerminate();
