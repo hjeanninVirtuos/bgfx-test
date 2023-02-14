@@ -27,32 +27,30 @@
 const bgfx::EmbeddedShader dg_dmapack_vs_embed = BGFX_EMBEDDED_SHADER(dg_dmapack_vs);
 const bgfx::EmbeddedShader dg_dmapack_fs_embed = BGFX_EMBEDDED_SHADER(dg_dmapack_fs);
 
-struct PosColorVertex
+struct PosVertex
 {
 	float m_x;
 	float m_y;
 	float m_z;
-	uint32_t m_abgr;
 
 	static void init()
 	{
 		ms_layout
 			.begin()
 			.add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
-			.add(bgfx::Attrib::Color0,   4, bgfx::AttribType::Uint8, true)
 			.end();
 	};
 
 	static bgfx::VertexLayout ms_layout;
 };
 
-bgfx::VertexLayout PosColorVertex::ms_layout;
+bgfx::VertexLayout PosVertex::ms_layout;
 
-static PosColorVertex s_cubeVertices[] =
+static PosVertex s_vertices[] =
 {
-	{-0.5f, -0.5f,  0.5f, 0xff0000ff },
-	{ 0.5f,  0.5f,  0.5f, 0xff00ff00 },
-	{-0.5f,  0.5f,  0.5f, 0xffff0000 },
+	{-0.5f, -0.5f,  0.5f},
+	{ 0.5f,  0.5f,  0.5f},
+	{-0.5f,  0.5f,  0.5f},
 };
 
 static void glfw_keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
@@ -83,9 +81,9 @@ int main(int argc, char **argv)
 		return 1;
 
 	// Buffer
-    PosColorVertex::init();
+    PosVertex::init();
     bgfx::VertexBufferHandle m_vbh;
-    m_vbh = bgfx::createVertexBuffer(bgfx::makeRef(s_cubeVertices, sizeof(s_cubeVertices)), PosColorVertex::ms_layout);
+    m_vbh = bgfx::createVertexBuffer(bgfx::makeRef(s_vertices, sizeof(s_vertices)), PosVertex::ms_layout);
 
     // Shader
     bgfx::ProgramHandle m_program;
