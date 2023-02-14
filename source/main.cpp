@@ -55,11 +55,6 @@ static PosColorVertex s_cubeVertices[] =
 	{-0.5f,  0.5f,  0.5f, 0xffff0000 },
 };
 
-static const uint16_t s_cubeTriList[] =
-{
-	0, 1, 2 // 0
-};
-
 static void glfw_keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
@@ -91,8 +86,6 @@ int main(int argc, char **argv)
     PosColorVertex::init();
     bgfx::VertexBufferHandle m_vbh;
     m_vbh = bgfx::createVertexBuffer(bgfx::makeRef(s_cubeVertices, sizeof(s_cubeVertices)), PosColorVertex::ms_layout);
-    bgfx::IndexBufferHandle ibh;
-    ibh = bgfx::createIndexBuffer(bgfx::makeRef(s_cubeTriList, sizeof(s_cubeTriList)));
 
     // Shader
     bgfx::ProgramHandle m_program;
@@ -111,7 +104,6 @@ int main(int argc, char **argv)
 		bgfx::touch(kClearView);
 
         bgfx::setVertexBuffer(0, m_vbh);
-        bgfx::setIndexBuffer(ibh);
         bgfx::setState(0 | BGFX_STATE_WRITE_R | BGFX_STATE_WRITE_G | BGFX_STATE_WRITE_B | UINT64_C(0));
         bgfx::submit(0, m_program);
 
@@ -121,7 +113,6 @@ int main(int argc, char **argv)
 
 	// Clean
     bgfx::destroy(m_vbh);
-    bgfx::destroy(ibh);
     bgfx::destroy(m_program);
     bgfx::shutdown();
     glfwTerminate();
