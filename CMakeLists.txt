@@ -31,22 +31,22 @@ include(vts_bgfx.cmake)
 
 vts_bgfx_compile_shader_to_header(
     TYPE        VERTEX
-    SHADERS     ${CMAKE_CURRENT_SOURCE_DIR}/shaders/dg_dmapack_vs.sc
-    VARYING_DEF ${CMAKE_CURRENT_SOURCE_DIR}/shaders/dg_dmapack_def.sc
+    SHADERS     ${CMAKE_CURRENT_SOURCE_DIR}/shaders/shader_vs.sc
+    VARYING_DEF ${CMAKE_CURRENT_SOURCE_DIR}/shaders/shader_def.sc
     OUTPUT_DIR  ${CMAKE_BINARY_DIR}/include/generated/shaders
 )
 
 vts_bgfx_compile_shader_to_header(
     TYPE        FRAGMENT
-    SHADERS     ${CMAKE_CURRENT_SOURCE_DIR}/shaders/dg_dmapack_fs.sc
-    VARYING_DEF ${CMAKE_CURRENT_SOURCE_DIR}/shaders/dg_dmapack_def.sc
+    SHADERS     ${CMAKE_CURRENT_SOURCE_DIR}/shaders/shader_fs.sc
+    VARYING_DEF ${CMAKE_CURRENT_SOURCE_DIR}/shaders/shader_def.sc
     OUTPUT_DIR  ${CMAKE_BINARY_DIR}/include/generated/shaders
 )
 
 set(SHADER_FILES
-    shaders/dg_dmapack_vs.sc
-    shaders/dg_dmapack_fs.sc
-    shaders/dg_dmapack_def.sc
+    shaders/shader_vs.sc
+    shaders/shader_fs.sc
+    shaders/shader_def.sc
 )
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX "Shader Files" FILES ${SHADER_FILES})
