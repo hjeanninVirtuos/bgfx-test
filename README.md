@@ -24,16 +24,15 @@ cmake --build $PSScriptRoot/build
 ```
 
 -----
-## Where:
-* In main.cpp line 66, we create a 2nd buffer using a dummy layout.
-* In the main loop line 85 we set a vertex buffer with an layoutHandle different from the layout used at the creation of the buffer.
-* The first buffer (line 85) render just fine but the second buffer (line 88) does not.
-* If you switch line 66 by line 67 you use the new layout at the creation of the 2nd buffer. -> it renders the second triangle forming a rectangle.
-* It seems that in line 2655 of
-```
-modules\bgfx\bgfx\src\bgfx_p.h
-```
-when rendering the second buffer,
+## Issue explanation:
+* In main.cpp 
+* Create 2 vertex layout with respectively a stride of 1 and 8 bytes.
+* Create a layoutHandle for the 8 bytes stride layout.
+* Create 2 vertex buffer using dummy layout of stride 1 byte.
+* Main loop line 85, set both buffers with layoutHandle of stride 8.
+* **PROBLEM:** The first buffer (line 85) render his triangle just fine but the second buffer (line 88) does not.
+* Switching line 66 by line 67 makes the 2nd buffer creation use the layout of stride 8. -> second triangle renders.
+* **ISSUE:** (Line 2655 bgfx_p.h) When rendering the second buffer, _dvb.m_startVertex is wrongly computed (6 x 8 + 1 = 49) instead (6 x 1 + 1 = 7), the layout of the buffer creation is used instead of the layoutHandle.
+* -> the second triangle does not render.
 
-_dvb.m_startVertex is computed using the layout of the buffer creation and not the layouthandle.
-* -> the second triangle stride is wrong -> no render.
+**TLDR: switch line 66 and 67 of main.cpp, compare results.**
