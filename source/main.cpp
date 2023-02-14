@@ -33,23 +33,38 @@ const bgfx::EmbeddedShader shader_fs_embed = BGFX_EMBEDDED_SHADER(shader_fs);
 
 static float s_vertices[] =
 {
-	-0.5f, -0.5f,  0.5f,
-	 0.5f,  0.5f,  0.5f,
-	-0.5f,  0.5f,  0.5f,
+	-0.5f, -0.5f,
+	 0.5f,  0.5f,
+	-0.5f,  0.5f,
+
+	-0.5f, -0.5f,
+	 0.5f, -0.5f,
+	 0.5f,  0.5f,
 };
 
 void mainLoop(GLFWwindow* window)
 {
-	// Vertex layout
+	// Vertex layouts
+	bgfx::VertexLayout dummy;
+	dummy
+		.begin()
+		.add(bgfx::Attrib::Color0, 1, bgfx::AttribType::Uint8)
+		.end();
+
 	bgfx::VertexLayout layout;
 	layout
 		.begin()
-		.add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
+		.add(bgfx::Attrib::Position, 2, bgfx::AttribType::Float)
 		.end();
+	bgfx::VertexLayoutHandle layoutHandle = bgfx::createVertexLayout(layout);
 
-	// Buffer
-	bgfx::VertexBufferHandle vbh;
-	vbh = bgfx::createVertexBuffer(bgfx::makeRef(s_vertices, sizeof(s_vertices)), layout);
+	// Buffers
+	bgfx::DynamicVertexBufferHandle vbh;
+	vbh = bgfx::createDynamicVertexBuffer(bgfx::makeRef(s_vertices, sizeof(s_vertices)), dummy);
+
+	bgfx::DynamicVertexBufferHandle vbh2;
+	vbh2 = bgfx::createDynamicVertexBuffer(bgfx::makeRef(s_vertices, sizeof(s_vertices)), dummy); // doesn't work
+	//vbh2 = bgfx::createDynamicVertexBuffer(bgfx::makeRef(s_vertices, sizeof(s_vertices)), layout); // works
 
 	// Shader
 	bgfx::ProgramHandle program;
@@ -67,7 +82,10 @@ void mainLoop(GLFWwindow* window)
 		glfwPollEvents();
 		bgfx::touch(kClearView);
 
-		bgfx::setVertexBuffer(0, vbh);
+		bgfx::setVertexBuffer(0, vbh, 0, 3, layoutHandle);
+		bgfx::submit(0, program);
+
+		bgfx::setVertexBuffer(0, vbh2, 3, 3, layoutHandle);
 		bgfx::submit(0, program);
 
 		// Advance to next frame. Process submitted rendering primitives.
