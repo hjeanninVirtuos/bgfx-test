@@ -24,6 +24,12 @@
 #include <dg_dmapack_fs.sc.dx11.bin.h>
 #endif // _WIN32
 
+static void glfw_keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+		glfwSetWindowShouldClose(window, GL_TRUE);
+}
+
 const bgfx::EmbeddedShader dg_dmapack_vs_embed = BGFX_EMBEDDED_SHADER(dg_dmapack_vs);
 const bgfx::EmbeddedShader dg_dmapack_fs_embed = BGFX_EMBEDDED_SHADER(dg_dmapack_fs);
 
@@ -53,10 +59,40 @@ static PosVertex s_vertices[] =
 	{-0.5f,  0.5f,  0.5f},
 };
 
-static void glfw_keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
+void render(GLFWwindow* window)
 {
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, GL_TRUE);
+	// Buffer
+	PosVertex::init();
+	bgfx::VertexBufferHandle m_vbh;
+	m_vbh = bgfx::createVertexBuffer(bgfx::makeRef(s_vertices, sizeof(s_vertices)), PosVertex::ms_layout);
+
+	// Shader
+	bgfx::ProgramHandle m_program;
+	bgfx::ShaderHandle dmapack_vs = bgfx::createEmbeddedShader(&dg_dmapack_vs_embed, bgfx::RendererType::Direct3D11, "dg_dmapack_vs");
+	bgfx::ShaderHandle dmapack_fs = bgfx::createEmbeddedShader(&dg_dmapack_fs_embed, bgfx::RendererType::Direct3D11, "dg_dmapack_fs");
+	m_program = bgfx::createProgram(dmapack_vs, dmapack_fs, true);
+
+	// Clear
+	const bgfx::ViewId kClearView = 0;
+	bgfx::setViewClear(kClearView, BGFX_CLEAR_COLOR);
+	bgfx::setViewRect(kClearView, 0, 0, bgfx::BackbufferRatio::Equal);
+
+	// Loop
+	while (!glfwWindowShouldClose(window)) {
+		glfwPollEvents();
+		bgfx::touch(kClearView);
+
+		bgfx::setVertexBuffer(0, m_vbh);
+		bgfx::setState(0 | BGFX_STATE_WRITE_R | BGFX_STATE_WRITE_G | BGFX_STATE_WRITE_B | UINT64_C(0));
+		bgfx::submit(0, m_program);
+
+		// Advance to next frame. Process submitted rendering primitives.
+		bgfx::frame();
+	}
+
+	// Clean
+	bgfx::destroy(m_vbh);
+	bgfx::destroy(m_program);
 }
 
 int main(int argc, char **argv)
@@ -80,38 +116,8 @@ int main(int argc, char **argv)
 	if (!bgfx::init(init))
 		return 1;
 
-	// Buffer
-    PosVertex::init();
-    bgfx::VertexBufferHandle m_vbh;
-    m_vbh = bgfx::createVertexBuffer(bgfx::makeRef(s_vertices, sizeof(s_vertices)), PosVertex::ms_layout);
+	render(window);
 
-    // Shader
-    bgfx::ProgramHandle m_program;
-	bgfx::ShaderHandle dmapack_vs = bgfx::createEmbeddedShader(&dg_dmapack_vs_embed, bgfx::RendererType::Direct3D11, "dg_dmapack_vs");
-	bgfx::ShaderHandle dmapack_fs = bgfx::createEmbeddedShader(&dg_dmapack_fs_embed, bgfx::RendererType::Direct3D11, "dg_dmapack_fs");
-    m_program = bgfx::createProgram(dmapack_vs, dmapack_fs, true);
-
-	// Clear
-    const bgfx::ViewId kClearView = 0;
-	bgfx::setViewClear(kClearView, BGFX_CLEAR_COLOR);
-	bgfx::setViewRect(kClearView, 0, 0, bgfx::BackbufferRatio::Equal);
-
-	// Loop
-	while (!glfwWindowShouldClose(window)) {
-		glfwPollEvents();
-		bgfx::touch(kClearView);
-
-        bgfx::setVertexBuffer(0, m_vbh);
-        bgfx::setState(0 | BGFX_STATE_WRITE_R | BGFX_STATE_WRITE_G | BGFX_STATE_WRITE_B | UINT64_C(0));
-        bgfx::submit(0, m_program);
-
-        // Advance to next frame. Process submitted rendering primitives.
-		bgfx::frame();
-	}
-
-	// Clean
-    bgfx::destroy(m_vbh);
-    bgfx::destroy(m_program);
     bgfx::shutdown();
     glfwTerminate();
     return 0;
