@@ -53,14 +53,14 @@ bgfx::VertexLayout PosColorVertex::ms_layout;
 
 static PosColorVertex s_cubeVertices[] =
 {
-	{-1.0f,  1.0f,  1.0f, 0xff000000 },
-	{ 1.0f,  1.0f,  1.0f, 0xff0000ff },
-	{-1.0f, -1.0f,  1.0f, 0xff00ff00 },
-	{ 1.0f, -1.0f,  1.0f, 0xff00ffff },
-	{-1.0f,  1.0f, -1.0f, 0xffff0000 },
-	{ 1.0f,  1.0f, -1.0f, 0xffff00ff },
-	{-1.0f, -1.0f, -1.0f, 0xffffff00 },
-	{ 1.0f, -1.0f, -1.0f, 0xffffffff },
+	{-0.5f,  0.5f,  0.5f, 0xff000000 },
+	{ 0.5f,  0.5f,  0.5f, 0xff0000ff },
+	{-0.5f, -0.5f,  0.5f, 0xff00ff00 },
+	{ 0.5f, -0.5f,  0.5f, 0xff00ffff },
+	{-0.5f,  0.5f, -0.5f, 0xffff0000 },
+	{ 0.5f,  0.5f, -0.5f, 0xffff00ff },
+	{-0.5f, -0.5f, -0.5f, 0xffffff00 },
+	{ 0.5f, -0.5f, -0.5f, 0xffffffff },
 };
 
 static const uint16_t s_cubeTriList[] =
@@ -119,18 +119,6 @@ int main(int argc, char **argv)
 	if (!bgfx::init(init))
 		return 1;
 
-// Matrix
-    const bx::Vec3 at = {0.0f, 0.0f, 0.0f};
-    const bx::Vec3 eye = {0.0f, 0.0f, -35.0f};
-    {
-        float view[16];
-        bx::mtxLookAt(view, eye, at);
-        float proj[16];
-        bx::mtxProj(proj, 60.0f, float(init.resolution.width) / float(init.resolution.height), 0.1f, 100.0f, TRUE);
-        bgfx::setViewTransform(0, view, proj);
-        bgfx::setViewRect(0, 0, 0, uint16_t(init.resolution.width), uint16_t(init.resolution.height));
-    }
-
 // Buffer
     // Create vertex stream declaration.
     PosColorVertex::init();
@@ -151,9 +139,9 @@ int main(int argc, char **argv)
     	| BGFX_STATE_WRITE_B
     	| BGFX_STATE_WRITE_A
     	| BGFX_STATE_WRITE_Z
-    	| BGFX_STATE_DEPTH_TEST_LESS
-    	| BGFX_STATE_CULL_CW
-    	| BGFX_STATE_MSAA
+		//| BGFX_STATE_DEPTH_TEST_LESS
+    	//| BGFX_STATE_CULL_CW
+    	//| BGFX_STATE_MSAA
     	| UINT64_C(0) // Triangle list is 0
     	;
 
