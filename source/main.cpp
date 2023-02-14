@@ -100,13 +100,6 @@ int main(int argc, char **argv)
 	bgfx::ShaderHandle dmapack_fs = bgfx::createEmbeddedShader(&dg_dmapack_fs_embed, bgfx::RendererType::Direct3D11, "dg_dmapack_fs");
     m_program = bgfx::createProgram(dmapack_vs, dmapack_fs, true);
 
-    uint64_t state = 0
-    	| BGFX_STATE_WRITE_R
-    	| BGFX_STATE_WRITE_G
-    	| BGFX_STATE_WRITE_B
-    	| UINT64_C(0) // Triangle list is 0
-    	;
-
 	// Clear
     const bgfx::ViewId kClearView = 0;
 	bgfx::setViewClear(kClearView, BGFX_CLEAR_COLOR);
@@ -119,7 +112,7 @@ int main(int argc, char **argv)
 
         bgfx::setVertexBuffer(0, m_vbh);
         bgfx::setIndexBuffer(ibh);
-        bgfx::setState(state);
+        bgfx::setState(0 | BGFX_STATE_WRITE_R | BGFX_STATE_WRITE_G | BGFX_STATE_WRITE_B | UINT64_C(0));
         bgfx::submit(0, m_program);
 
         // Advance to next frame. Process submitted rendering primitives.
