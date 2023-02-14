@@ -60,25 +60,15 @@ static const uint16_t s_cubeTriList[] =
 	0, 1, 2 // 0
 };
 
-static bool s_showStats = false;
-
-static void glfw_errorCallback(int error, const char *description)
-{
-	fprintf(stderr, "GLFW error %d: %s\n", error, description);
-}
-
 static void glfw_keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GL_TRUE);
-	if (key == GLFW_KEY_F1 && action == GLFW_RELEASE)
-		s_showStats = !s_showStats;
 }
 
 int main(int argc, char **argv)
 {
 	// Init
-	glfwSetErrorCallback(glfw_errorCallback);
 	if (!glfwInit())
 		return 1;
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
